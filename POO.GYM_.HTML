@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>POO GYM UCO — Sistema de Gestión</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--surface3:#222;
+  --border:#2a2a2a;--accent:#e8ff00;--accent2:#ff4d1a;
+  --text:#f0f0f0;--dim:#666;--mid:#999;
+  --ok:#22c55e;--err:#ef4444;
+  --fd:'Bebas Neue',sans-serif;--fb:'DM Sans',sans-serif;--fm:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;overflow-x:hidden}
+.layout{display:grid;grid-template-columns:255px 1fr;min-height:100vh}
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.s-logo{padding:28px 22px 20px;border-bottom:1px solid var(--border)}
+.s-tag{font-family:var(--fm);font-size:10px;color:var(--accent);letter-spacing:3px;margin-bottom:4px}
+.s-title{font-family:var(--fd);font-size:40px;line-height:.9;letter-spacing:1px}
+.s-title span{color:var(--accent)}
+.s-nav{padding:12px 10px;flex:1}
+.s-lbl{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--dim);padding:14px 10px 6px;text-transform:uppercase}
+.nb{display:flex;align-items:center;gap:11px;width:100%;padding:10px 11px;border:none;background:transparent;color:var(--mid);font-family:var(--fb);font-size:13.5px;font-weight:500;cursor:pointer;border-radius:8px;transition:all .15s;text-align:left;margin-bottom:2px}
+.nb:hover{background:var(--surface2);color:var(--text)}
+.nb.on{background:var(--accent);color:#000}
+.ni{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.s-foot{padding:14px 22px;border-top:1px solid var(--border)}
+.apist{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:11px;color:var(--dim)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+/* MAIN */
+.main{display:flex;flex-direction:column;min-height:100vh}
+.topbar{padding:18px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:var(--surface);position:sticky;top:0;z-index:10}
+.tbc{font-family:var(--fm);font-size:12px;color:var(--dim);display:flex;align-items:center;gap:8px}
+.tbc-cur{color:var(--accent)}
+.tba{margin-left:auto;display:flex;gap:10px;align-items:center}
+.urlbadge{font-family:var(--fm);font-size:11px;color:var(--dim);background:var(--surface2);border:1px solid var(--border);padding:5px 11px;border-radius:6px}
+.content{padding:32px}
+/* CONFIG BAR */
+.cfgbar{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;margin-bottom:26px;display:flex;align-items:center;gap:12px}
+.cfgbar label{font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--dim);white-space:nowrap}
+.cfgbar input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--accent);font-family:var(--fm);font-size:13px;padding:7px 12px;outline:none}
+.cfgbar input:focus{border-color:var(--accent)}
+/* PAGE */
+.ph{margin-bottom:28px;display:flex;align-items:flex-end;justify-content:space-between}
+.pt{font-family:var(--fd);font-size:52px;line-height:1;letter-spacing:1px}
+.ps{font-size:13px;color:var(--mid);margin-top:5px}
+/* STATS */
+.sr{display:grid;gap:14px;margin-bottom:26px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s}
+.sc:hover{border-color:#444}
+.sc-lbl{font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:8px}
+.sc-val{font-family:var(--fd);font-size:44px;line-height:1}
+.sc-ico{position:absolute;top:16px;right:16px;font-size:26px;opacity:.13}
+/* SECTION CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.ch{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.ct{font-family:var(--fd);font-size:20px;letter-spacing:1px}
+.cc{font-family:var(--fm);font-size:11px;color:var(--dim);background:var(--surface2);border:1px solid var(--border);padding:2px 9px;border-radius:20px}
+.ca{margin-left:auto;display:flex;gap:8px}
+/* BTNS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border:none;border-radius:8px;font-family:var(--fb);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn-p{background:var(--accent);color:#000}
+.btn-p:hover{background:#d4e800;transform:translateY(-1px)}
+.btn-g{background:transparent;color:var(--mid);border:1px solid var(--border)}
+.btn-g:hover{background:var(--surface2);color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);padding:11px 18px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:13px 18px;font-size:13.5px}
+.cid{font-family:var(--fm);font-size:11px;color:var(--dim)}
+.chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.cy{background:rgba(232,255,0,.12);color:var(--accent)}
+.co{background:rgba(255,77,26,.12);color:var(--accent2)}
+.cg{background:rgba(34,197,94,.12);color:var(--ok)}
+.cd{background:var(--surface3);color:var(--mid)}
+/* EMPTY */
+.empty{padding:56px 24px;text-align:center;color:var(--dim)}
+.e-ico{font-size:36px;margin-bottom:10px;opacity:.3}
+.e-txt{font-size:14px;margin-bottom:3px}
+.e-sub{font-size:12px}
+/* LOADER */
+.ldr{padding:36px;text-align:center;color:var(--dim)}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:7px}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px}
+.md{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:510px;box-shadow:0 24px 80px rgba(0,0,0,.7);animation:mi .2s ease}
+@keyframes mi{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.mh{padding:22px 26px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.mt{font-family:var(--fd);font-size:26px;letter-spacing:1px}
+.mc{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--mid);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;border:none;transition:all .15s}
+.mc:hover{background:var(--surface3);color:var(--text)}
+.mb{padding:0 26px}
+.mf{padding:18px 26px 22px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--border);margin-top:20px}
+/* FORM */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.fg .full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--fb);font-size:13.5px;padding:9px 13px;width:100%;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+input::placeholder,textarea::placeholder{color:var(--dim)}
+select option{background:var(--surface2)}
+/* TOAST */
+.tc{position:fixed;bottom:22px;right:22px;z-index:200;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:11px;font-size:13px;min-width:270px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:ti .25s ease}
+@keyframes ti{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+.t-ok{border-left:3px solid var(--ok)}
+.t-err{border-left:3px solid var(--err)}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ── helpers ──────────────────────────────────────────────────────
+const h = (tag, props, ...kids) => {
+  const el = document.createElement(tag);
+  if (props) Object.entries(props).forEach(([k,v]) => {
+    if (k === 'cls') el.className = v;
+    else if (k === 'html') el.innerHTML = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k === 'checked') el.checked = v;
+    else if (k === 'disabled') el.disabled = v;
+    else if (k === 'value') el.value = v ?? '';
+    else if (k === 'placeholder') el.placeholder = v;
+    else if (k === 'type') el.type = v;
+    else if (k === 'min') el.min = v;
+    else if (k === 'max') el.max = v;
+    else if (k === 'step') el.step = v;
+    else el.setAttribute(k, v);
+  });
+  kids.flat(Infinity).forEach(c => {
+    if (c == null || c === false) return;
+    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return el;
+};
+const div  = (p,...k) => h('div',p,...k);
+const span = (p,...k) => h('span',p,...k);
+const btn  = (p,...k) => h('button',p,...k);
+const inp  = (p)      => h('input',p);
+const sel  = (p,...k) => h('select',p,...k);
+const opt  = (p,t)    => h('option',p,t);
+const lbl  = (p,...k) => h('label',p,...k);
+const td   = (p,...k) => h('td',p,...k);
+const th   = (p,...k) => h('th',p,...k);
+const tr   = (p,...k) => h('tr',p,...k);
+const tbl  = (p,...k) => h('table',p,...k);
+const strong = (p,...k) => h('strong',p,...k);
+
+// ── state ─────────────────────────────────────────────────────────
+let BASE = 'https://localhost:7131';
+let currentPage = 'dashboard';
+let toasts = [];
+let toastId = 0;
+
+const state = {
+  dashboard: { loaded: false, stats: {} },
+  usuarios: { data: [], loading: false, modal: false, saving: false, form: {} },
+  administradores: { data: [], loading: false, modal: false, saving: false, form: {} },
+  entrenadores: { data: [], loading: false, modal: false, saving: false, form: {} },
+  ejercicios: { data: [], loading: false, modal: false, saving: false, form: {} },
+  rutinas: { data: [], loading: false, modal: false, saving: false, form: {} },
+};
+
+// ── API ───────────────────────────────────────────────────────────
+async function apiGet(path) {
+  const r = await fetch(BASE + path);
+  if (!r.ok) throw new Error(await r.text().catch(() => r.statusText));
+  return r.json();
+}
+async function apiPost(path, body) {
+  const r = await fetch(BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(await r.text().catch(() => r.statusText));
+  try { return await r.json(); } catch { return null; }
+}
+
+// ── toast ─────────────────────────────────────────────────────────
+function toast(msg, type = 'ok') {
+  const id = ++toastId;
+  toasts = [...toasts, { id, msg, type }];
+  renderToasts();
+  setTimeout(() => { toasts = toasts.filter(t => t.id !== id); renderToasts(); }, 3500);
+}
+
+function renderToasts() {
+  const tc = document.getElementById('toast-container');
+  tc.innerHTML = '';
+  toasts.forEach(t => {
+    tc.appendChild(div({ cls: `toast t-${t.type}` },
+      span({}, t.type === 'ok' ? '✓' : '✕'),
+      span({}, t.msg)
+    ));
+  });
+}
+
+// ── chip ──────────────────────────────────────────────────────────
+function chip(text, cls) {
+  return span({ cls: `chip ${cls}` }, text);
+}
+
+// ── field builder ─────────────────────────────────────────────────
+function field(labelText, input, full = false) {
+  return div({ cls: `field${full ? ' full' : ''}` },
+    lbl({}, labelText),
+    input
+  );
+}
+
+function selectOpts(opts, val, onChange) {
+  const el = sel({ onchange: onChange });
+  opts.forEach(([v, t]) => {
+    const o = opt({ value: v }, t);
+    if (v === val) o.selected = true;
+    el.appendChild(o);
+  });
+  return el;
+}
+
+// ── modal ─────────────────────────────────────────────────────────
+function Modal(titleText, body, onClose, onSave, saving) {
+  return div({ cls: 'mo', onclick: e => { if (e.target.classList.contains('mo')) onClose(); } },
+    div({ cls: 'md' },
+      div({ cls: 'mh' },
+        div({ cls: 'mt' }, titleText),
+        btn({ cls: 'mc', onclick: onClose }, '✕')
+      ),
+      div({ cls: 'mb' }, body),
+      div({ cls: 'mf' },
+        btn({ cls: 'btn btn-g', onclick: onClose }, 'Cancelar'),
+        btn({ cls: 'btn btn-p', onclick: onSave, disabled: saving },
+          saving ? '…Guardando' : '✓ Guardar'
+        )
+      )
+    )
+  );
+}
+
+// ── empty / loader ────────────────────────────────────────────────
+function Empty(icon, text) {
+  return div({ cls: 'empty' },
+    div({ cls: 'e-ico' }, icon),
+    div({ cls: 'e-txt' }, text),
+    div({ cls: 'e-sub' }, 'Usa el botón "+" para agregar el primero')
+  );
+}
+function Loader() {
+  return div({ cls: 'ldr' }, span({ cls: 'spin' }), ' Cargando…');
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  PAGES
+// ─────────────────────────────────────────────────────────────────
+
+// ── DASHBOARD ────────────────────────────────────────────────────
+async function loadDashboard(el) {
+  if (state.dashboard.loaded) return;
+  try {
+    const [u,a,en,ej,r] = await Promise.allSettled([
+      apiGet('/api/usuarios'), apiGet('/api/administradores'),
+      apiGet('/api/entrenadores'), apiGet('/api/ejercicios'), apiGet('/api/rutinas'),
+    ]);
+    state.dashboard.stats = {
+      usuarios:     u.status === 'fulfilled'  ? (u.value?.length  ?? 0) : 0,
+      admins:       a.status === 'fulfilled'  ? (a.value?.length  ?? 0) : 0,
+      entrenadores: en.status === 'fulfilled' ? (en.value?.length ?? 0) : 0,
+      ejercicios:   ej.status === 'fulfilled' ? (ej.value?.length ?? 0) : 0,
+      rutinas:      r.status === 'fulfilled'  ? (r.value?.length  ?? 0) : 0,
+    };
+    state.dashboard.loaded = true;
+    renderDashboard(el);
+  } catch(e) { toast('Error cargando dashboard: ' + e.message, 'err'); }
+}
+
+function renderDashboard(el) {
+  el.innerHTML = '';
+  const s = state.dashboard.stats;
+  const loaded = state.dashboard.loaded;
+
+  const statCards = [
+    ['USUARIOS', loaded ? s.usuarios : '…', '👤'],
+    ['ADMINISTRADORES', loaded ? s.admins : '…', '🛡️'],
+    ['ENTRENADORES', loaded ? s.entrenadores : '…', '🏋️'],
+    ['EJERCICIOS', loaded ? s.ejercicios : '…', '💪'],
+    ['RUTINAS', loaded ? s.rutinas : '…', '📋'],
+  ];
+
+  const endpoints = [
+    ['GET', '/api/usuarios', 'Lista todos los usuarios'],
+    ['POST', '/api/usuarios', 'Crea un nuevo usuario'],
+    ['GET', '/api/administradores', 'Lista administradores'],
+    ['POST', '/api/administradores', 'Crea un administrador'],
+    ['GET', '/api/entrenadores', 'Lista entrenadores'],
+    ['POST', '/api/entrenadores', 'Crea un entrenador'],
+    ['GET', '/api/ejercicios', 'Lista ejercicios (Fuerza)'],
+    ['POST', '/api/ejercicios', 'Crea ejercicio tipo Fuerza'],
+    ['GET', '/api/rutinas', 'Lista rutinas'],
+    ['POST', '/api/rutinas', 'Crea una rutina'],
+  ];
+
+  const models = [
+    { n: 'Persona', f: 'Nombre · Correo · Contraseña', c: '#a78bfa' },
+    { n: 'Usuario : Persona', f: 'Objetivo · EstadoFísico · FechaRegistro', c: '#e8ff00' },
+    { n: 'Administrador : Persona', f: 'Usuarios[] · Entrenadores[]', c: '#22d3ee' },
+    { n: 'Entrenador : Persona', f: 'Especialidad · Experiencia · Usuarios[]', c: '#ff4d1a' },
+    { n: 'Ejercicio (abstract)', f: 'Nombre · GrupoMuscular · Dificultad', c: '#f472b6' },
+    { n: 'Fuerza : Ejercicio', f: 'PesoMaximo', c: '#fb923c' },
+    { n: 'Rutina', f: 'Nombre · Objetivo · Duración · Nivel · Estado', c: '#34d399' },
+  ];
+
+  el.append(
+    div({ cls: 'ph' },
+      div({},
+        div({ cls: 'pt', html: 'PANEL <span style="color:var(--accent)">PRINCIPAL</span>' }),
+        div({ cls: 'ps' }, 'Resumen general del sistema POO GYM UCO')
+      ),
+      btn({ cls: 'btn btn-g', onclick: () => { state.dashboard.loaded = false; renderPage(); } }, '↻ Recargar')
+    ),
+    div({ cls: 'sr', style: { gridTemplateColumns: 'repeat(5,1fr)' } },
+      ...statCards.map(([l,v,i]) =>
+        div({ cls: 'sc' },
+          div({ cls: 'sc-lbl' }, l),
+          div({ cls: 'sc-val' }, String(v)),
+          div({ cls: 'sc-ico' }, i)
+        )
+      )
+    ),
+    div({ style: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:'18px' } },
+      // endpoints
+      div({ cls: 'card' },
+        div({ cls: 'ch' }, div({ cls: 'ct' }, 'ENDPOINTS API')),
+        div({ style: { padding:'14px 22px' } },
+          ...endpoints.map(([m, p, d]) =>
+            div({ style: { display:'flex', alignItems:'center', gap:'12px', padding:'8px 0', borderBottom:'1px solid var(--border)', fontSize:'13px' } },
+              span({ style: {
+                fontFamily:'var(--fm)', fontSize:'10px', fontWeight:'600',
+                padding:'3px 7px', borderRadius:'4px', minWidth:'38px', textAlign:'center',
+                background: m === 'GET' ? 'rgba(34,197,94,.15)' : 'rgba(232,255,0,.12)',
+                color: m === 'GET' ? 'var(--ok)' : 'var(--accent)',
+              }}, m),
+              span({ style: { fontFamily:'var(--fm)', fontSize:'12px', color:'var(--mid)' } }, p),
+              span({ style: { color:'var(--dim)', fontSize:'12px', marginLeft:'auto' } }, d)
+            )
+          )
+        )
+      ),
+      // models
+      div({ cls: 'card' },
+        div({ cls: 'ch' }, div({ cls: 'ct' }, 'MODELOS DEL SISTEMA')),
+        div({ style: { padding:'14px 22px' } },
+          ...models.map(m =>
+            div({ style: { display:'flex', alignItems:'center', gap:'10px', padding:'9px 0', borderBottom:'1px solid var(--border)', fontSize:'13px' } },
+              div({ style: { width:'9px', height:'9px', borderRadius:'50%', background:m.c, flexShrink:'0' } }),
+              strong({}, m.n),
+              span({ style: { color:'var(--dim)', fontSize:'11px', marginLeft:'auto', textAlign:'right' } }, m.f)
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+// ── GENERIC TABLE PAGE ────────────────────────────────────────────
+function makeTablePage(cfg) {
+  /*
+    cfg = {
+      key, title, subtitle, icon,
+      apiPath,
+      stats(data),           // returns [{label,val,icon}]
+      cols,                  // ['Col1','Col2',...]
+      row(item, i),          // returns [td,td,...]
+      formFields(formObj, set), // returns form DOM
+      toBody(formObj),       // returns API body
+      defaultForm,
+      validate(formObj),     // returns error string | null
+      modalTitle,
+      btnLabel,
+    }
+  */
+  const key = cfg.key;
+  if (!state[key].form || !Object.keys(state[key].form).length)
+    state[key].form = { ...cfg.defaultForm };
+
+  return function render(el) {
+    const s = state[key];
+    el.innerHTML = '';
+
+    const statsEl = div({ cls: 'sr', style: { gridTemplateColumns: `repeat(${cfg.stats(s.data).length},1fr)` } });
+    const tableWrap = div({ cls: 'tw' });
+    const countEl = span({ cls: 'cc' }, s.data.length + ' registros');
+
+    function refreshStats() {
+      statsEl.innerHTML = '';
+      cfg.stats(s.data).forEach(st => {
+        statsEl.appendChild(div({ cls: 'sc' },
+          div({ cls: 'sc-lbl' }, st.label),
+          div({ cls: 'sc-val' }, String(st.val)),
+          div({ cls: 'sc-ico' }, st.icon)
+        ));
+      });
+    }
+
+    function refreshTable() {
+      tableWrap.innerHTML = '';
+      countEl.textContent = s.data.length + ' registros';
+      if (s.loading) { tableWrap.appendChild(Loader()); return; }
+      if (!s.data.length) { tableWrap.appendChild(Empty(cfg.icon, `No hay ${cfg.title.toLowerCase()} registrados`)); return; }
+      tableWrap.appendChild(
+        tbl({},
+          h('thead', {}, tr({}, ...cfg.cols.map(c => th({}, c)))),
+          h('tbody', {}, ...s.data.map((item, i) => tr({}, ...cfg.row(item, i))))
+        )
+      );
+    }
+
+    async function load() {
+      s.loading = true; refreshTable();
+      try {
+        s.data = (await apiGet(cfg.apiPath)) || [];
+      } catch(e) { toast('Error cargando ' + cfg.title.toLowerCase() + ': ' + e.message, 'err'); }
+      s.loading = false;
+      refreshStats(); refreshTable();
+    }
+
+    let modalEl = null;
+    function openModal() {
+      s.form = { ...cfg.defaultForm };
+      s.saving = false;
+      renderModal();
+    }
+    function closeModal() {
+      if (modalEl) { modalEl.remove(); modalEl = null; }
+    }
+    function renderModal() {
+      if (modalEl) modalEl.remove();
+      const formBody = cfg.formFields(s.form, (k, v) => { s.form[k] = v; });
+      modalEl = Modal(
+        cfg.modalTitle,
+        div({ cls: 'fg' }, ...formBody),
+        closeModal,
+        async () => {
+          const err = cfg.validate(s.form);
+          if (err) { toast(err, 'err'); return; }
+          s.saving = true; renderModal();
+          try {
+            await apiPost(cfg.apiPath, cfg.toBody(s.form));
+            toast(cfg.title.slice(0,-1) + ' creado correctamente');
+            closeModal();
+            await load();
+          } catch(e) { toast('Error: ' + e.message, 'err'); }
+          s.saving = false;
+        },
+        s.saving
+      );
+      document.body.appendChild(modalEl);
+    }
+
+    el.append(
+      div({ cls: 'ph' },
+        div({},
+          div({ cls: 'pt' }, cfg.title),
+          div({ cls: 'ps' }, cfg.subtitle)
+        )
+      ),
+      statsEl,
+      div({ cls: 'card' },
+        div({ cls: 'ch' },
+          div({ cls: 'ct' }, 'LISTA DE ' + cfg.title),
+          countEl,
+          div({ cls: 'ca' },
+            btn({ cls: 'btn btn-g btn-sm', onclick: load }, '↻ Actualizar'),
+            btn({ cls: 'btn btn-p btn-sm', onclick: openModal }, '+ ' + cfg.btnLabel)
+          )
+        ),
+        tableWrap
+      )
+    );
+
+    refreshStats();
+    load();
+  };
+}
+
+// ── USUARIOS ─────────────────────────────────────────────────────
+const renderUsuarios = makeTablePage({
+  key: 'usuarios', title: 'USUARIOS', subtitle: 'Gestión de miembros del gimnasio', icon: '👤',
+  apiPath: '/api/usuarios', btnLabel: 'Nuevo Usuario', modalTitle: 'NUEVO USUARIO',
+  defaultForm: { nombre:'', correo:'', contrasena:'', objetivo:'', estadoFisico:'', fechaRegistro: new Date().toISOString().split('T')[0] },
+  validate: f => !f.nombre.trim() ? 'El nombre es obligatorio' : !f.correo.trim() ? 'El correo es obligatorio' : null,
+  toBody: f => ({ nombre:f.nombre, correo:f.correo, contrasena:f.contrasena, objetivo:f.objetivo, estadoFisico:f.estadoFisico, fechaRegistro:f.fechaRegistro }),
+  stats: data => [
+    { label:'Total Usuarios', val:data.length, icon:'👤' },
+    { label:'Con Objetivo', val:data.filter(u=>u.objetivo).length, icon:'🎯' },
+    { label:'Con Entrenador', val:data.filter(u=>u.entrenador).length, icon:'🏋️' },
+    { label:'Con Rutinas', val:data.filter(u=>u.rutinas?.length>0).length, icon:'📋' },
+  ],
+  cols: ['#ID','Nombre','Correo','Objetivo','Estado Físico','Rutinas','Fecha Registro'],
+  row: (u,i) => [
+    td({}, span({ cls:'cid' }, '#' + (u.idUsuario ?? i+1))),
+    td({}, strong({}, u.nombre)),
+    td({ style:{fontFamily:'var(--fm)',fontSize:'12px',color:'var(--mid)'} }, u.correo || '—'),
+    td({}, u.objetivo ? chip('🎯 '+u.objetivo,'cy') : chip('—','cd')),
+    td({}, u.estadoFisico ? chip(u.estadoFisico,'cg') : chip('—','cd')),
+    td({}, chip((u.rutinas?.length??0)+' rutinas','co')),
+    td({ style:{fontSize:'12px',color:'var(--mid)'} }, u.fechaRegistro ? new Date(u.fechaRegistro).toLocaleDateString('es-CO') : '—'),
+  ],
+  formFields: (form, set) => [
+    field('Nombre Completo *', inp({ value:form.nombre, placeholder:'Ej: Carlos Gómez', oninput:e=>set('nombre',e.target.value) }), true),
+    field('Correo *', inp({ type:'email', value:form.correo, placeholder:'correo@ejemplo.com', oninput:e=>set('correo',e.target.value) })),
+    field('Contraseña', inp({ type:'password', value:form.contrasena, placeholder:'••••••••', oninput:e=>set('contrasena',e.target.value) })),
+    field('Objetivo', selectOpts([['','Seleccionar…'],['Pérdida de peso','Pérdida de peso'],['Ganancia muscular','Ganancia muscular'],['Resistencia','Resistencia'],['Flexibilidad','Flexibilidad'],['Salud general','Salud general']], form.objetivo, e=>set('objetivo',e.target.value))),
+    field('Estado Físico', selectOpts([['','Seleccionar…'],['Principiante','Principiante'],['Intermedio','Intermedio'],['Avanzado','Avanzado']], form.estadoFisico, e=>set('estadoFisico',e.target.value))),
+    field('Fecha de Registro', inp({ type:'date', value:form.fechaRegistro, oninput:e=>set('fechaRegistro',e.target.value) })),
+  ],
+});
+
+// ── ADMINISTRADORES ──────────────────────────────────────────────
+const renderAdministradores = makeTablePage({
+  key: 'administradores', title: 'ADMINISTRADORES', subtitle: 'Control de acceso al sistema', icon: '🛡️',
+  apiPath: '/api/administradores', btnLabel: 'Nuevo Admin', modalTitle: 'NUEVO ADMINISTRADOR',
+  defaultForm: { nombre:'', correo:'', contrasena:'', telefono:'' },
+  validate: f => !f.nombre.trim() ? 'El nombre es obligatorio' : null,
+  toBody: f => ({ nombre:f.nombre, correo:f.correo, contrasena:f.contrasena, telefono:f.telefono }),
+  stats: data => [
+    { label:'Total Admins', val:data.length, icon:'🛡️' },
+    { label:'Activos', val:data.length, icon:'✓' },
+  ],
+  cols: ['#ID','Nombre','Correo','Usuarios','Entrenadores'],
+  row: (a,i) => [
+    td({}, span({ cls:'cid' }, '#' + (a.idAdministrador ?? i+1))),
+    td({}, strong({}, a.nombre)),
+    td({ style:{fontFamily:'var(--fm)',fontSize:'12px',color:'var(--mid)'} }, a.correo || '—'),
+    td({}, chip((a.usuarios?.length??0)+' usuarios','cy')),
+    td({}, chip((a.entrenadores?.length??0)+' entrenadores','co')),
+  ],
+  formFields: (form, set) => [
+    field('Nombre Completo *', inp({ value:form.nombre, placeholder:'Ej: Ana Martínez', oninput:e=>set('nombre',e.target.value) }), true),
+    field('Correo', inp({ type:'email', value:form.correo, placeholder:'admin@gym.com', oninput:e=>set('correo',e.target.value) })),
+    field('Contraseña', inp({ type:'password', value:form.contrasena, placeholder:'••••••••', oninput:e=>set('contrasena',e.target.value) })),
+    field('Teléfono', inp({ value:form.telefono, placeholder:'+57 300 000 0000', oninput:e=>set('telefono',e.target.value) }), true),
+  ],
+});
+
+// ── ENTRENADORES ─────────────────────────────────────────────────
+const renderEntrenadores = makeTablePage({
+  key: 'entrenadores', title: 'ENTRENADORES', subtitle: 'Equipo profesional del gimnasio', icon: '🏋️',
+  apiPath: '/api/entrenadores', btnLabel: 'Nuevo Entrenador', modalTitle: 'NUEVO ENTRENADOR',
+  defaultForm: { nombre:'', correo:'', contrasena:'', especialidad:'', experiencia:'' },
+  validate: f => !f.nombre.trim() ? 'El nombre es obligatorio' : null,
+  toBody: f => ({ nombre:f.nombre, correo:f.correo, contrasena:f.contrasena, especialidad:f.especialidad, experiencia:parseInt(f.experiencia)||0 }),
+  stats: data => [
+    { label:'Total', val:data.length, icon:'🏋️' },
+    { label:'Con Especialidad', val:data.filter(e=>e.especialidad).length, icon:'⭐' },
+    { label:'Alumnos Totales', val:data.reduce((s,e)=>s+(e.usuarios?.length??0),0), icon:'👥' },
+  ],
+  cols: ['#ID','Nombre','Correo','Especialidad','Experiencia','Alumnos'],
+  row: (e,i) => [
+    td({}, span({ cls:'cid' }, '#' + (e.idEntrenador ?? i+1))),
+    td({}, strong({}, e.nombre)),
+    td({ style:{fontFamily:'var(--fm)',fontSize:'12px',color:'var(--mid)'} }, e.correo || '—'),
+    td({}, e.especialidad ? chip(e.especialidad,'cy') : chip('—','cd')),
+    td({}, e.experiencia != null ? chip(e.experiencia+' años','cg') : chip('—','cd')),
+    td({}, chip((e.usuarios?.length??0)+' alumnos','co')),
+  ],
+  formFields: (form, set) => [
+    field('Nombre Completo *', inp({ value:form.nombre, placeholder:'Ej: Luis Pérez', oninput:e=>set('nombre',e.target.value) }), true),
+    field('Correo', inp({ type:'email', value:form.correo, placeholder:'entrenador@gym.com', oninput:e=>set('correo',e.target.value) })),
+    field('Contraseña', inp({ type:'password', value:form.contrasena, placeholder:'••••••••', oninput:e=>set('contrasena',e.target.value) })),
+    field('Especialidad', selectOpts([['','Seleccionar…'],['Musculación','Musculación'],['Cardio','Cardio'],['CrossFit','CrossFit'],['Yoga','Yoga'],['Pilates','Pilates'],['Funcional','Funcional'],['Nutrición deportiva','Nutrición deportiva']], form.especialidad, e=>set('especialidad',e.target.value))),
+    field('Años de Experiencia', inp({ type:'number', min:'0', max:'50', value:form.experiencia, placeholder:'0', oninput:e=>set('experiencia',e.target.value) })),
+  ],
+});
+
+// ── EJERCICIOS ───────────────────────────────────────────────────
+const renderEjercicios = makeTablePage({
+  key: 'ejercicios', title: 'EJERCICIOS', subtitle: 'Biblioteca de ejercicios de fuerza', icon: '💪',
+  apiPath: '/api/ejercicios', btnLabel: 'Nuevo Ejercicio', modalTitle: 'NUEVO EJERCICIO (FUERZA)',
+  defaultForm: { nombre:'', grupoMuscular:'', dificultad:'', pesoMaximo:'' },
+  validate: f => !f.nombre.trim() ? 'El nombre es obligatorio' : null,
+  toBody: f => ({ nombre:f.nombre, grupoMuscular:f.grupoMuscular, dificultad:f.dificultad, pesoMaximo:parseFloat(f.pesoMaximo)||0 }),
+  stats: data => [
+    { label:'Total Ejercicios', val:data.length, icon:'💪' },
+    { label:'Grupos Musculares', val:new Set(data.map(e=>e.grupoMuscular).filter(Boolean)).size, icon:'🦾' },
+    { label:'Peso Máx. Prom.', val: data.length ? Math.round(data.reduce((s,e)=>s+(e.pesoMaximo||0),0)/data.length)+'kg' : '—', icon:'⚖️' },
+  ],
+  cols: ['#ID','Nombre','Grupo Muscular','Dificultad','Peso Máximo','Rutina'],
+  row: (e,i) => {
+    const dc = !e.dificultad ? 'cd' : e.dificultad.toLowerCase().includes('princi') ? 'cg' : e.dificultad.toLowerCase().includes('inter') ? 'cy' : 'co';
+    return [
+      td({}, span({ cls:'cid' }, '#' + (e.idEjercicio ?? i+1))),
+      td({}, strong({}, e.nombre)),
+      td({}, e.grupoMuscular ? chip(e.grupoMuscular,'cy') : chip('—','cd')),
+      td({}, e.dificultad ? chip(e.dificultad, dc) : chip('—','cd')),
+      td({}, e.pesoMaximo != null ? chip(e.pesoMaximo+' kg','cg') : chip('—','cd')),
+      td({}, e.rutina ? chip(e.rutina.nombre,'co') : chip('Sin rutina','cd')),
+    ];
+  },
+  formFields: (form, set) => [
+    field('Nombre del Ejercicio *', inp({ value:form.nombre, placeholder:'Ej: Press de banca', oninput:e=>set('nombre',e.target.value) }), true),
+    field('Grupo Muscular', selectOpts([['','Seleccionar…'],['Pecho','Pecho'],['Espalda','Espalda'],['Hombros','Hombros'],['Bíceps','Bíceps'],['Tríceps','Tríceps'],['Piernas','Piernas'],['Glúteos','Glúteos'],['Abdomen','Abdomen'],['Cuerpo completo','Cuerpo completo']], form.grupoMuscular, e=>set('grupoMuscular',e.target.value))),
+    field('Dificultad', selectOpts([['','Seleccionar…'],['Principiante','Principiante'],['Intermedio','Intermedio'],['Avanzado','Avanzado']], form.dificultad, e=>set('dificultad',e.target.value))),
+    field('Peso Máximo (kg)', inp({ type:'number', min:'0', step:'0.5', value:form.pesoMaximo, placeholder:'0.0', oninput:e=>set('pesoMaximo',e.target.value) }), true),
+  ],
+});
+
+// ── RUTINAS ──────────────────────────────────────────────────────
+const renderRutinas = makeTablePage({
+  key: 'rutinas', title: 'RUTINAS', subtitle: 'Planes de entrenamiento personalizados', icon: '📋',
+  apiPath: '/api/rutinas', btnLabel: 'Nueva Rutina', modalTitle: 'NUEVA RUTINA',
+  defaultForm: { nombre:'', objetivo:'', duracion:'', nivel:'', estado:true },
+  validate: f => !f.nombre.trim() ? 'El nombre es obligatorio' : null,
+  toBody: f => ({ nombre:f.nombre, objetivo:f.objetivo, duracion:parseInt(f.duracion)||0, nivel:f.nivel, estado:!!f.estado }),
+  stats: data => [
+    { label:'Total Rutinas', val:data.length, icon:'📋' },
+    { label:'Activas', val:data.filter(r=>r.estado).length, icon:'✅' },
+    { label:'Inactivas', val:data.filter(r=>!r.estado).length, icon:'⏸️' },
+    { label:'Duración Prom.', val:data.length ? Math.round(data.reduce((s,r)=>s+(r.duracion||0),0)/data.length)+'min' : '—', icon:'⏱️' },
+  ],
+  cols: ['#ID','Nombre','Objetivo','Duración','Nivel','Estado','Ejercicios'],
+  row: (r,i) => {
+    const nc = !r.nivel ? 'cd' : r.nivel.toLowerCase().includes('princi') ? 'cg' : r.nivel.toLowerCase().includes('inter') ? 'cy' : 'co';
+    return [
+      td({}, span({ cls:'cid' }, '#' + (r.idRutina ?? i+1))),
+      td({}, strong({}, r.nombre)),
+      td({}, r.objetivo ? chip(r.objetivo,'cy') : chip('—','cd')),
+      td({ style:{fontFamily:'var(--fm)',fontSize:'13px'} }, r.duracion ? r.duracion+' min' : '—'),
+      td({}, r.nivel ? chip(r.nivel, nc) : chip('—','cd')),
+      td({}, chip(r.estado ? 'Activa' : 'Inactiva', r.estado ? 'cg' : 'cd')),
+      td({}, chip((r.ejercicios?.length??0)+' ejercicios','co')),
+    ];
+  },
+  formFields: (form, set) => {
+    const checkWrap = div({ cls:'field' });
+    const checkLbl = lbl({}, 'Estado');
+    const checkRow = div({ style:{display:'flex',alignItems:'center',gap:'10px',paddingTop:'8px'} });
+    const cb = inp({ type:'checkbox', style:{width:'17px',height:'17px',accentColor:'var(--accent)',cursor:'pointer'} });
+    cb.checked = form.estado;
+    cb.addEventListener('change', e => set('estado', e.target.checked));
+    const cbLbl = lbl({ style:{fontFamily:'var(--fb)',fontSize:'14px',letterSpacing:'0',textTransform:'none',color:'var(--mid)',cursor:'pointer'} }, 'Rutina activa');
+    checkRow.append(cb, cbLbl);
+    checkWrap.append(checkLbl, checkRow);
+    return [
+      field('Nombre de la Rutina *', inp({ value:form.nombre, placeholder:'Ej: Rutina de fuerza – Semana 1', oninput:e=>set('nombre',e.target.value) }), true),
+      field('Objetivo', selectOpts([['','Seleccionar…'],['Pérdida de peso','Pérdida de peso'],['Ganancia muscular','Ganancia muscular'],['Resistencia','Resistencia'],['Fuerza','Fuerza'],['Tonificación','Tonificación']], form.objetivo, e=>set('objetivo',e.target.value))),
+      field('Nivel', selectOpts([['','Seleccionar…'],['Principiante','Principiante'],['Intermedio','Intermedio'],['Avanzado','Avanzado']], form.nivel, e=>set('nivel',e.target.value))),
+      field('Duración (minutos)', inp({ type:'number', min:'0', max:'300', value:form.duracion, placeholder:'45', oninput:e=>set('duracion',e.target.value) })),
+      checkWrap,
+    ];
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────
+//  APP SHELL
+// ─────────────────────────────────────────────────────────────────
+const pages = { dashboard:'Dashboard', usuarios:'Usuarios', administradores:'Administradores', entrenadores:'Entrenadores', ejercicios:'Ejercicios', rutinas:'Rutinas' };
+const navItems = [
+  { id:'dashboard', icon:'⬡', label:'Dashboard' },
+  { id:'usuarios', icon:'👤', label:'Usuarios' },
+  { id:'administradores', icon:'🛡️', label:'Administradores' },
+  { id:'entrenadores', icon:'🏋️', label:'Entrenadores' },
+  { id:'ejercicios', icon:'💪', label:'Ejercicios' },
+  { id:'rutinas', icon:'📋', label:'Rutinas' },
+];
+
+
+
+function buildShell() {
+  const root = document.getElementById('root');
+
+  // sidebar
+  const navEl = div({ cls:'s-nav' });
+  navEl.appendChild(div({ cls:'s-lbl' }, 'Navegación'));
+  const navBtns = {};
+  navItems.forEach(n => {
+    const b = btn({ cls:'nb' + (n.id === currentPage ? ' on' : ''), onclick: () => navigate(n.id) },
+      span({ cls:'ni' }, n.icon), n.label
+    );
+    navBtns[n.id] = b;
+    navEl.appendChild(b);
+  });
+
+  const sidebar = div({ cls:'sidebar' },
+    div({ cls:'s-logo' },
+      div({ cls:'s-tag' }, 'Sistema de Gestión'),
+      div({ cls:'s-title', html:'POO<br><span>GYM</span><br>UCO' })
+    ),
+    navEl,
+    div({ cls:'s-foot' },
+      div({ cls:'apist' }, div({ cls:'dot' }), 'API Conectada')
+    )
+  );
+
+  // topbar
+  const breadCur = span({ cls:'tbc-cur' }, pages[currentPage]);
+  const urlBadge = span({ cls:'urlbadge' }, BASE);
+  const topbar = div({ cls:'topbar' },
+    div({ cls:'tbc' },
+      span({}, 'POO GYM UCO'),
+      span({}, ' / '),
+      breadCur
+    ),
+    div({ cls:'tba' }, urlBadge)
+  );
+
+  // config bar
+  const urlInput = inp({ value: BASE, placeholder:'http://localhost:7131', style:{flex:'1',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'6px',color:'var(--accent)',fontFamily:'var(--fm)',fontSize:'13px',padding:'7px 12px',outline:'none'} });
+  const applyBtn = btn({ cls:'btn btn-p btn-sm',
+    onclick: () => {
+      BASE = urlInput.value.replace(/\/$/, '');
+      urlBadge.textContent = BASE;
+      toast('URL de API actualizada');
+      Object.values(state).forEach(s => { s.loaded = false; if (s.data) s.data = []; });
+      renderPage();
+    }
+  }, '↻ Aplicar');
+  const cfgBar = div({ cls:'cfgbar' },
+    lbl({ style:{whiteSpace:'nowrap'} }, 'BASE URL'),
+    urlInput,
+    applyBtn
+  );
+
+  // page container
+  const pageEl = div({ id:'page-content' });
+
+  const main = div({ cls:'main' }, topbar, div({ cls:'content' }, cfgBar, pageEl));
+  const layout = div({ cls:'layout' }, sidebar, main);
+  root.appendChild(layout);
+
+  // toast container
+  const tc = div({ cls:'tc', id:'toast-container' });
+  document.body.appendChild(tc);
+
+  function navigate(id) {
+    if (navBtns[currentPage]) navBtns[currentPage].classList.remove('on');
+    currentPage = id;
+    navBtns[currentPage].classList.add('on');
+    breadCur.textContent = pages[id];
+    renderPage();
+  }
+
+  renderPage();
+}
+
+function renderPage() {
+  const el = document.getElementById('page-content');
+  if (!el) return;
+  switch(currentPage) {
+    case 'usuarios':        renderUsuarios(el);        break;
+    case 'administradores': renderAdministradores(el); break;
+    case 'entrenadores':    renderEntrenadores(el);    break;
+    case 'ejercicios':      renderEjercicios(el);      break;
+    case 'rutinas':         renderRutinas(el);         break;
+    default:
+      el.innerHTML = '';
+      renderDashboard(el);
+      loadDashboard(el);
+  }
+}
+
+buildShell();
+</script>
+</body>
+</html>
